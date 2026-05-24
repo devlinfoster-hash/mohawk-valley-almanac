@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react'
-import { Routes, Route, Link, useParams, useNavigate } from 'react-router-dom'
+import { Routes, Route, Link, useParams, useNavigate, useSearchParams } from 'react-router-dom'
 import { supabase } from './supabase'
 
 // ── Palette ──────────────────────────────────────────────────────────────────
@@ -120,6 +120,7 @@ function GlobalStyles() {
         .mobile-only { display: block; }
         h1 { font-size: 1.5rem; }
         .layout-grid { grid-template-columns: 1fr !important; }
+        .filter-card { grid-template-columns: 1fr !important; }
       }
 
       .drawer-backdrop {
@@ -585,17 +586,36 @@ function btnGhost() {
 // ── Home ─────────────────────────────────────────────────────────────────────
 function Home() {
   const { listings, loading, error } = useListings()
-  const [query, setQuery] = useState('')
-  const [county, setCounty] = useState('all')
-  const [town, setTown] = useState('all')
-  const [category, setCategory] = useState('all')
+  const [searchParams, setSearchParams] = useSearchParams()
+
+  const query = searchParams.get('q') || ''
+  const county = searchParams.get('county') || 'all'
+  const town = searchParams.get('town') || 'all'
+  const category = searchParams.get('category') || 'all'
+
   const [drawerOpen, setDrawerOpen] = useState(false)
   const [showSubmit, setShowSubmit] = useState(false)
 
-  // Cascading: reset town when county changes
-  useEffect(() => {
-    setTown('all')
-  }, [county])
+  // Single setter that updates URL search params while keeping the URL clean.
+  // Pass null/'all'/'' for a key to remove it.
+  const updateParams = (patch) => {
+    setSearchParams(
+      (prev) => {
+        const next = new URLSearchParams(prev)
+        for (const [k, v] of Object.entries(patch)) {
+          if (v == null || v === '' || v === 'all') next.delete(k)
+          else next.set(k, v)
+        }
+        return next
+      },
+      { replace: false }
+    )
+  }
+
+  const setQuery = (v) => updateParams({ q: v })
+  const setCounty = (v) => updateParams({ county: v, town: null }) // cascade: clear town
+  const setTown = (v) => updateParams({ town: v })
+  const setCategory = (v) => updateParams({ category: v })
 
   const towns = useMemo(() => {
     const t = new Set()
@@ -649,7 +669,7 @@ function Home() {
       >
         {/* Search bar + filters */}
         <div
-          className="card"
+          className="card filter-card"
           style={{
             display: 'grid',
             gridTemplateColumns: '2fr 1fr 1fr auto',
@@ -875,7 +895,7 @@ function ListingPage() {
 
   const l = listing
   const mapsHref = l.address
-    ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(l.address)}`
+    ? `https://maps.google.com/?q=${encodeURIComponent(l.address)}`
     : null
   const updateSubject = `Update listing: ${l.name}`
   const mailtoHref = `mailto:${SITE.email}?subject=${encodeURIComponent(updateSubject)}`
@@ -912,7 +932,17 @@ function ListingPage() {
             <>
               <dt style={{ color: C.muted }}>Phone</dt>
               <dd style={{ margin: 0 }}>
-                <a href={`tel:${l.phone.replace(/[^\d+]/g, '')}`}>{l.phone}</a>
+                <a
+                  href={`tel:${l.phone.replace(/[^\d+]/g, '')}`}
+                  style={{
+                    color: C.accent,
+                    fontFamily: "'DM Mono', ui-monospace, monospace",
+                    fontWeight: 500,
+                    fontSize: '1.05rem',
+                  }}
+                >
+                  {l.phone}
+                </a>
               </dd>
             </>
           )}

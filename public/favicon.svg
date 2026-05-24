@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <rect width="64" height="64" rx="10" fill="#1C3A5E"/>
+  <rect y="48" width="64" height="6" fill="#C4862D"/>
+  <text x="32" y="40" text-anchor="middle"
+        font-family="Georgia, 'Libre Baskerville', serif"
+        font-weight="700" font-size="30" fill="#EFF0E8">MV</text>
+</svg>
