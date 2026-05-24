@@ -895,7 +895,7 @@ function ListingPage() {
 
   const l = listing
   const mapsHref = l.address
-    ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(l.address)}`
+    ? `https://maps.google.com/?q=${encodeURIComponent(l.address)}`
     : null
   const updateSubject = `Update listing: ${l.name}`
   const mailtoHref = `mailto:${SITE.email}?subject=${encodeURIComponent(updateSubject)}`
