@@ -262,9 +262,10 @@ function useListings() {
         const { data, error } = await supabase
           .from('listings')
           .select('*')
-          .eq('status', 'approved')
+          .eq('status', 'published')
           .order('name', { ascending: true })
           .limit(2000)
+        console.log('Supabase response:', data, error);
         if (cancelled) return
         if (error) {
           setError(error.message)
@@ -818,8 +819,9 @@ function ListingPage() {
         .from('listings')
         .select('*')
         .eq('slug', slug)
-        .eq('status', 'approved')
+        .eq('status', 'published')
         .limit(1)
+      console.log('Supabase response:', data, error);
       if (cancelled) return
       if (error || !data || data.length === 0) {
         setNotFound(true)
@@ -988,6 +990,7 @@ function Admin() {
       .eq('status', 'pending')
       .order('created_at', { ascending: false })
       .limit(2000)
+    console.log('Supabase response:', data, error);
     if (!error) setPending(data || [])
     setLoading(false)
   }
