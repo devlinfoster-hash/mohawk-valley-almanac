@@ -67,6 +67,28 @@ const slugify = (s) =>
 
 const catLabel = (k) => CATEGORIES.find((c) => c.key === k)?.label || k
 
+function linkifyDescription(text) {
+  if (!text) return null
+  const urlRegex = /(?<!@)(https?:\/\/\S+|(?:[a-zA-Z0-9-]+\.)+(?:com|org|net|edu|gov|io|co|farm|store|shop)(?:\/\S*)?)/gi
+  const parts = []
+  let lastIndex = 0
+  let match
+  let key = 0
+  while ((match = urlRegex.exec(text)) !== null) {
+    if (match.index > lastIndex) parts.push(text.slice(lastIndex, match.index))
+    const url = match[0]
+    const href = url.startsWith('http') ? url : 'https://' + url
+    parts.push(
+      <a key={key++} href={href} target="_blank" rel="noreferrer" style={{ color: C.accent, textDecoration: 'underline' }}>
+        {url}
+      </a>
+    )
+    lastIndex = match.index + url.length
+  }
+  if (lastIndex < text.length) parts.push(text.slice(lastIndex))
+  return parts
+}
+
 // ── Global styles ────────────────────────────────────────────────────────────
 function GlobalStyles() {
   return (
@@ -415,7 +437,7 @@ function ListingCard({ l }) {
           </div>
           {l.description && (
             <p style={{ margin: '.6rem 0 .5rem', color: C.text }}>
-              {l.description}
+              {linkifyDescription(l.description)}
             </p>
           )}
           {Array.isArray(l.tags) && l.tags.length > 0 && (
@@ -918,7 +940,7 @@ function ListingPage() {
           )}
         </div>
 
-        {l.description && <p style={{ marginTop: 0 }}>{l.description}</p>}
+        {l.description && <p style={{ marginTop: 0 }}>{linkifyDescription(l.description)}</p>}
 
         <dl
           style={{
@@ -964,6 +986,7 @@ function ListingPage() {
                   href={l.website.startsWith('http') ? l.website : `https://${l.website}`}
                   target="_blank"
                   rel="noopener noreferrer"
+                  style={{ color: C.accent, textDecoration: 'underline' }}
                 >
                   {l.website}
                 </a>
@@ -1088,7 +1111,7 @@ function Admin() {
             </div>
             {l.description && <p>{l.description}</p>}
             <div style={{ display: 'flex', gap: '.6rem' }}>
-              <button onClick={() => setStatus(l.id, 'approved')} style={btnPrimary()}>
+              <button onClick={() => setStatus(l.id, 'published')} style={btnPrimary()}>
                 Approve
               </button>
               <button onClick={() => setStatus(l.id, 'rejected')} style={btnGhost()}>
@@ -1114,6 +1137,7 @@ export default function App() {
             <Route path="/" element={<Home />} />
             <Route path="/admin" element={<Admin />} />
             <Route path="/listing/:slug" element={<ListingPage />} />
+            <Route path="/listings/:slug" element={<ListingPage />} />
           </Routes>
         </div>
         <Footer />
