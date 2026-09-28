@@ -7,6 +7,10 @@ import { supabase } from './supabase'
 // The site's colors are CSS custom properties defined once in THEME_TOKENS
 // below; every stylesheet rule and inline style reads from them.
 
+// Same Buy Me a Coffee page the Hudson Valley Almanac links to (HVA's
+// BMC_SUPPORT_URL). Used by the top-nav CTA and the About page button.
+const BMC_SUPPORT_URL = 'https://buymeacoffee.com/hudsonvalleyalmanac'
+
 const SITE = {
   name: 'Mohawk Valley Almanac',
   tagline: "The Mohawk Valley's homesteading & rural living guide",
@@ -56,6 +60,35 @@ const CATEGORIES = [
   { key: 'craftbeverages', label: 'Craft Beverages' },
 ]
 
+// Emoji icon per category key, shown before the label on the home quick
+// filters, the category sidebar/drawer and each listing card's meta line.
+// Edit here; a key with no entry simply renders without an icon.
+const CATEGORY_ICONS = {
+  feed: '🌾',
+  animals: '🐄',
+  makers: '🎨',
+  land: '🏡',
+  food: '🥕',
+  water: '💧',
+  seeds: '🌱',
+  learn: '📚',
+  equipment: '🔧',
+  hearth: '🔥',
+  farmservices: '🚜',
+  health: '🩺',
+  fiber: '🧶',
+  maple: '🍁',
+  trades: '🔨',
+  markets: '🧺',
+  legal: '⚖️',
+  outdoor: '🌲',
+  apothecary: '🌿',
+  forage: '🍄',
+  artisan: '🧀',
+  cannabis: '🍃',
+  craftbeverages: '🍺',
+}
+
 // Home page quick filters: shortcuts to the categories with the most listings.
 const QUICK_CATEGORIES = ['food', 'animals', 'markets', 'maple', 'craftbeverages', 'artisan']
 
@@ -70,6 +103,7 @@ const slugify = (s) =>
     .replace(/(^-|-$)/g, '')
 
 const catLabel = (k) => CATEGORIES.find((c) => c.key === k)?.label || k
+const catIcon = (k) => CATEGORY_ICONS[k] || ''
 const countyBySlug = (s) => COUNTIES.find((c) => slugify(c) === s)
 const hasTag = (l, tag) => Array.isArray(l.tags) && l.tags.includes(tag)
 const plural = (n, word) => `${n} ${n === 1 ? word : word + 's'}`
@@ -174,6 +208,9 @@ const STYLES = `
   .topnav-link:hover { color: var(--mva-on-primary); }
   .topnav-link.active { color: var(--mva-on-primary); border-bottom-color: var(--mva-accent); }
   .topnav-link:focus-visible { outline: 2px solid var(--mva-accent); outline-offset: 3px; }
+  /* The one action among the nav links: accent ghost CTA, boxed so it reads as a button. */
+  .topnav-support { color: var(--mva-accent); border: 1.5px solid var(--mva-accent); border-radius: 4px; padding: 4px 14px; transition: background 0.2s, color 0.2s; }
+  .topnav-support:hover { background: var(--mva-accent); color: var(--mva-primary); }
   @media (max-width: 640px) { .topnav-secondary { display: none; } }
 
   /* Home hero */
@@ -189,11 +226,12 @@ const STYLES = `
   .town-select { padding: 11px 14px; font-family: var(--font-body); font-size: 15px; border: 1.5px solid var(--mva-primary); background: var(--mva-surface); color: var(--mva-text); outline: none; cursor: pointer; min-width: 150px; }
   .town-select:focus { border-color: var(--mva-accent); }
   .quick-row { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; max-width: var(--content-width); margin: 22px auto 0; }
-  .quick-btn { display: inline-flex; align-items: center; justify-content: center; min-height: 48px; padding: 10px 16px; background: var(--mva-surface); color: var(--mva-primary); border: 1.5px solid var(--mva-primary); border-radius: 8px; font-family: var(--font-body); font-size: 14px; font-weight: 600; cursor: pointer; transition: background 0.15s, color 0.15s; }
+  .quick-btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 48px; padding: 10px 14px; background: var(--mva-surface); color: var(--mva-primary); border: 1.5px solid var(--mva-primary); border-radius: 8px; font-family: var(--font-body); font-size: 14px; font-weight: 600; cursor: pointer; transition: background 0.15s, color 0.15s; }
   .quick-btn:hover { background: var(--mva-tint); }
   .quick-btn.active { background: var(--mva-primary); color: var(--mva-on-primary); }
   .quick-btn:focus-visible { outline: 2px solid var(--mva-accent); outline-offset: 2px; }
-  @media (max-width: 760px) { .quick-row { display: grid; grid-template-columns: repeat(3, 1fr); } .quick-btn { text-align: center; padding: 10px 8px; } }
+  .quick-btn-icon { font-size: 20px; line-height: 1; }
+  @media (max-width: 760px) { .quick-row { display: grid; grid-template-columns: repeat(3, 1fr); } .quick-btn { text-align: center; flex-direction: column; gap: 4px; padding: 10px 8px; } }
   @media (max-width: 480px) { .quick-row { grid-template-columns: repeat(2, 1fr); } }
 
   /* Section bar under the hero (county directory links) */
@@ -310,6 +348,11 @@ const STYLES = `
   .about-lede { font-size: 19px; line-height: 1.6; font-style: italic; color: var(--mva-muted); margin-bottom: 28px; padding-bottom: 24px; border-bottom: 1px solid var(--mva-line); }
   .about-body p { font-size: 17px; line-height: 1.75; color: var(--mva-text); margin-bottom: 20px; }
   .about-body .link-button { color: var(--mva-primary); }
+  .about-support { margin-top: 8px; }
+  .support-btn { display: inline-flex; align-items: center; gap: 0.55rem; padding: 12px 26px; border-radius: 8px; font-family: var(--font-mono); font-size: 12px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; line-height: 1; text-decoration: none; background: var(--mva-primary); color: var(--mva-on-primary); border: 1.5px solid var(--mva-primary); transition: filter 0.2s; }
+  .support-btn:hover { filter: brightness(0.85); }
+  .support-btn:focus-visible { outline: 2px solid var(--mva-primary); outline-offset: 3px; }
+  @media (prefers-reduced-motion: reduce) { .support-btn, .topnav-support { transition: none; } }
   @media (max-width: 600px) {
     .listing-page-nav { padding: 16px 16px 0; }
     .listing-page-article { padding: 16px 16px 64px; }
@@ -364,6 +407,15 @@ function TopNav() {
           Submit a Listing
         </button>
         <a href={`mailto:${SITE.email}`} className="topnav-link topnav-secondary">Contact Us</a>
+        <a
+          href={BMC_SUPPORT_URL}
+          className="topnav-link topnav-support"
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label="Support the Almanac on Buy Me a Coffee"
+        >
+          Buy Me a Coffee
+        </a>
       </div>
     </nav>
   )
@@ -445,13 +497,12 @@ function Loading({ label }) {
 function ListingCard({ l }) {
   const slug = l.slug || slugify(l.name)
   const meta = [
-    catLabel(l.category),
-    l.town,
-    l.county && `${l.county} County`,
-    l.established && `Est. ${l.established}`,
+    `${catIcon(l.category)} ${catLabel(l.category) || ''}`.trim(),
+    [l.town, l.county && `${l.county} Co.`].filter(Boolean).join(', '),
+    l.established ? `Est. ${l.established}` : null,
   ]
     .filter(Boolean)
-    .join(' · ')
+    .join(' - ')
   return (
     // The whole card is the link, so the description is plain text here (a
     // linkified URL would nest an <a> inside this one); the listing page
@@ -514,7 +565,7 @@ function PaginatedResultsGrid({ listings, resetKey }) {
 // ── Category list (sidebar + mobile drawer) ─────────────────────────────────
 function CategoryList({ counts, active, onSelect }) {
   const items = [{ key: 'all', label: 'All Listings', count: counts._total || 0 }].concat(
-    CATEGORIES.map((c) => ({ ...c, count: counts[c.key] || 0 }))
+    CATEGORIES.map((c) => ({ ...c, label: `${catIcon(c.key)} ${c.label}`.trim(), count: counts[c.key] || 0 }))
   )
   return items.map((c) => (
     <div
@@ -784,6 +835,15 @@ function Home() {
     })
   }, [listings, query, category, county, town])
 
+  // Hero line built from the live published listings; falls back to the site
+  // tagline while loading or if the query fails.
+  const heroTagline = useMemo(() => {
+    if (loading || error || listings.length === 0) return SITE.tagline
+    const countyCount = new Set(listings.map((l) => l.county).filter(Boolean)).size
+    const counties = `${countyCount} ${countyCount === 1 ? 'county' : 'counties'}`
+    return `${listings.length.toLocaleString('en-US')} farms, markets, makers, and homestead resources across ${counties} of the Mohawk Valley. Free to browse, and every listing is reviewed by hand.`
+  }, [listings, loading, error])
+
   const counts = useMemo(() => {
     const acc = { _total: listings.length }
     listings.forEach((l) => {
@@ -799,7 +859,7 @@ function Home() {
           Mohawk Valley<br />
           <em>Almanac</em>
         </h1>
-        <p className="masthead-sub">{SITE.tagline}</p>
+        <p className="masthead-sub">{heroTagline}</p>
         <p className="masthead-counties">{SITE.topbar}</p>
         <div className="search-row">
           <input
@@ -831,6 +891,7 @@ function Home() {
               aria-pressed={category === key}
               onClick={() => applyQuickCategory(key)}
             >
+              <span className="quick-btn-icon" aria-hidden="true">{catIcon(key)}</span>
               {catLabel(key)}
             </button>
           ))}
@@ -1287,9 +1348,27 @@ function AboutPage() {
               Catskills, and Capital Region.
             </p>
           </div>
+          <div className="about-support">
+            <SupportButton />
+          </div>
         </div>
       </article>
     </>
+  )
+}
+
+// "Support the Almanac" button (a plain link to Buy Me a Coffee, same page as
+// the top-nav CTA). The sprig icon matches the HVA button.
+function SupportButton() {
+  return (
+    <a className="support-btn" href={BMC_SUPPORT_URL} target="_blank" rel="noopener noreferrer" aria-label="Support the Almanac">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+        <path d="M12 21v-8" />
+        <path d="M12 13c0-6 4-10 9-11-1 6-4 11-9 11Z" />
+        <path d="M12 13C12 8 8 5 3 4c1 6 4 9 9 9Z" />
+      </svg>
+      <span>Support the Almanac</span>
+    </a>
   )
 }
 
