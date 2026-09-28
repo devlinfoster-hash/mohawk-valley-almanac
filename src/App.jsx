@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react'
 import { Routes, Route, Link, useParams, useNavigate, useSearchParams } from 'react-router-dom'
+import FreezerFullContent from './FreezerFullPage.jsx'
 import { supabase } from './supabase'
 
 // ── Palette ──────────────────────────────────────────────────────────────────
@@ -605,6 +606,9 @@ function btnGhost() {
   }
 }
 
+// Counties covered by both this site and the Hudson Valley Almanac.
+const HVA_SHARED_COUNTIES = new Set(['Fulton', 'Montgomery', 'Schoharie', 'Otsego', 'Schenectady'])
+
 // ── Home ─────────────────────────────────────────────────────────────────────
 function Home() {
   const { listings, loading, error } = useListings()
@@ -770,6 +774,18 @@ function Home() {
             </div>
 
             {showSubmit && <SubmitForm onClose={() => setShowSubmit(false)} />}
+
+            {HVA_SHARED_COUNTIES.has(county) && (
+              <div className="card" style={{ marginBottom: '1rem' }}>
+                <p style={{ margin: 0 }}>
+                  Our sister site, the{' '}
+                  <a href={`https://www.hudsonvalleyalmanac.com/county/${county.toLowerCase()}`} target="_blank" rel="noreferrer">
+                    Hudson Valley Almanac
+                  </a>
+                  , also covers {county} County, along with the Hudson Valley, Catskills, and Capital Region.
+                </p>
+              </div>
+            )}
 
             {error && (
               <div className="card" style={{ marginBottom: '1rem', color: '#b00020' }}>
@@ -1125,6 +1141,15 @@ function Admin() {
   )
 }
 
+// Companion page for the book "Freezer Full: Mohawk Valley Edition". The book
+// sends readers here for the current farm list; data lives in src/data/freezer-full.js.
+function FreezerFullPage() {
+  useEffect(() => {
+    document.title = 'Freezer Full: Farm List — Mohawk Valley Almanac'
+  }, [])
+  return <FreezerFullContent siteName="Mohawk Valley Almanac" bookTitle="Freezer Full: Mohawk Valley Edition" />
+}
+
 // ── App ──────────────────────────────────────────────────────────────────────
 export default function App() {
   return (
@@ -1138,6 +1163,7 @@ export default function App() {
             <Route path="/admin" element={<Admin />} />
             <Route path="/listing/:slug" element={<ListingPage />} />
             <Route path="/listings/:slug" element={<ListingPage />} />
+            <Route path="/freezer-full" element={<FreezerFullPage />} />
           </Routes>
         </div>
         <Footer />
