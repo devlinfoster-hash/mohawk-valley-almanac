@@ -74,6 +74,17 @@ const countyBySlug = (s) => COUNTIES.find((c) => slugify(c) === s)
 const hasTag = (l, tag) => Array.isArray(l.tags) && l.tags.includes(tag)
 const plural = (n, word) => `${n} ${n === 1 ? word : word + 's'}`
 
+// verified_at is a plain date ("YYYY-MM-DD"); show it as "Month Year". Parsed
+// by hand rather than with new Date() so the month can't shift with the
+// viewer's time zone. Returns null when the value is missing or malformed.
+const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
+function formatVerified(d) {
+  const m = /^(\d{4})-(\d{2})/.exec(String(d || '').trim())
+  if (!m) return null
+  const month = MONTHS[Number(m[2]) - 1]
+  return month ? `${month} ${m[1]}` : null
+}
+
 function linkifyDescription(text) {
   if (!text) return null
   const urlRegex = /(?<!@)(https?:\/\/\S+|(?:[a-zA-Z0-9-]+\.)+(?:com|org|net|edu|gov|io|co|farm|store|shop)(?:\/\S*)?)/gi
@@ -283,6 +294,7 @@ const STYLES = `
   .listing-page-body { background: var(--mva-surface); border: 2px solid var(--mva-primary); border-top: none; padding: 32px; }
   .listing-desc-lede { font-size: 17px; line-height: 1.7; color: var(--mva-text); margin-bottom: 24px; font-style: italic; border-left: 3px solid var(--mva-accent); padding-left: 16px; overflow-wrap: anywhere; }
   .listing-desc-lede a { font-style: normal; }
+  .verified-note { font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.06em; color: var(--mva-muted); margin: -8px 0 24px; }
   .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px 24px; margin: 0 0 24px; padding-bottom: 24px; border-bottom: 1px solid var(--mva-line); }
   .info-field dt { font-family: var(--font-mono); font-size: 9px; letter-spacing: 0.22em; text-transform: uppercase; color: var(--mva-muted); margin-bottom: 3px; }
   .info-field dd { margin: 0; font-size: 15px; color: var(--mva-text); overflow-wrap: anywhere; }
@@ -1150,6 +1162,7 @@ function ListingPage() {
   const mapsHref = l.address
     ? `https://maps.google.com/?q=${encodeURIComponent(l.address)}`
     : null
+  const verified = formatVerified(l.verified_at)
   const updateSubject = `Update listing: ${l.name}`
   const mailtoHref = `mailto:${SITE.email}?subject=${encodeURIComponent(updateSubject)}`
   const sub = [
@@ -1183,6 +1196,7 @@ function ListingPage() {
         </header>
         <div className="listing-page-body">
           {l.description && <p className="listing-desc-lede">{linkifyDescription(l.description)}</p>}
+          {verified && <p className="verified-note">Details last checked {verified}</p>}
 
           <dl className="info-grid">
             {l.address && (
