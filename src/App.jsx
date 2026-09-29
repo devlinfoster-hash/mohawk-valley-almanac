@@ -32,10 +32,18 @@ const COUNTIES = [
   'Schenectady',
 ]
 
+// Single source of truth for category labels. `key` is the value stored in
+// listings.category (never change it here); `label` is shown everywhere a
+// category name appears; `description`, where present, is the helper line in
+// the Submit a Listing form, for categories that are easy to confuse.
 const CATEGORIES = [
   { key: 'feed', label: 'Feed & Grain' },
   { key: 'animals', label: 'Livestock & Animals' },
-  { key: 'makers', label: 'Makers & Crafters' },
+  {
+    key: 'makers',
+    label: 'Makers & Crafters',
+    description: 'Potters, metalworkers, woodworkers, glass, leather, jewelry and art.',
+  },
   { key: 'land', label: 'Land & Property' },
   { key: 'food', label: 'Farm Food' },
   { key: 'water', label: 'Water & Wells' },
@@ -53,11 +61,17 @@ const CATEGORIES = [
   { key: 'outdoor', label: 'Outdoor & Recreation' },
   { key: 'apothecary', label: 'Apothecary' },
   { key: 'forage', label: 'Foraging' },
-  { key: 'artisan', label: 'Artisan Food' },
+  {
+    key: 'artisan',
+    label: 'Artisan Food',
+    description: 'Bakers, roasters, cheese, jams and other food makers.',
+  },
   { key: 'cannabis', label: 'Cannabis' },
-  // Present in the listings table (breweries, cideries, wineries) but had no
-  // label, so these listings were unreachable from the category browser.
-  { key: 'craftbeverages', label: 'Craft Beverages' },
+  {
+    key: 'craftbeverages',
+    label: 'Craft Beverages',
+    description: 'Breweries, wineries, distilleries, cideries and meaderies.',
+  },
 ]
 
 // Emoji icon per category key, shown before the label on the home quick
@@ -66,7 +80,7 @@ const CATEGORIES = [
 const CATEGORY_ICONS = {
   feed: '🌾',
   animals: '🐄',
-  makers: '🎨',
+  makers: '🎨', // crafts: keep distinct from artisan (food)
   land: '🏡',
   food: '🥕',
   water: '💧',
@@ -84,7 +98,7 @@ const CATEGORY_ICONS = {
   outdoor: '🌲',
   apothecary: '🌿',
   forage: '🍄',
-  artisan: '🧀',
+  artisan: '🧀', // food: keep distinct from makers (crafts)
   cannabis: '🍃',
   craftbeverages: '🍺',
 }
@@ -103,6 +117,7 @@ const slugify = (s) =>
     .replace(/(^-|-$)/g, '')
 
 const catLabel = (k) => CATEGORIES.find((c) => c.key === k)?.label || k
+const catDescription = (k) => CATEGORIES.find((c) => c.key === k)?.description || ''
 const catIcon = (k) => CATEGORY_ICONS[k] || ''
 const countyBySlug = (s) => COUNTIES.find((c) => slugify(c) === s)
 const hasTag = (l, tag) => Array.isArray(l.tags) && l.tags.includes(tag)
@@ -316,6 +331,7 @@ const STYLES = `
   .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
   .form-row-wide { grid-template-columns: 2fr 1fr; }
   .form-error { color: var(--mva-error); margin-bottom: 12px; }
+  .form-hint { font-size: 13px; font-style: italic; color: var(--mva-muted); line-height: 1.5; margin: -8px 0 14px; }
 
   /* Single-page shell: listing detail, About, admin, 404 */
   .listing-page-nav { max-width: var(--reading-width); margin: 0 auto; padding: 24px 24px 0; display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; }
@@ -702,11 +718,19 @@ function SubmitForm({ onClose }) {
               <label htmlFor="sf-name">Name</label>
               <input id="sf-name" required value={form.name} onChange={upd('name')} />
               <label htmlFor="sf-category">Category</label>
-              <select id="sf-category" value={form.category} onChange={upd('category')}>
+              <select
+                id="sf-category"
+                value={form.category}
+                onChange={upd('category')}
+                aria-describedby={catDescription(form.category) ? 'sf-category-hint' : undefined}
+              >
                 {CATEGORIES.map((c) => (
                   <option key={c.key} value={c.key}>{c.label}</option>
                 ))}
               </select>
+              {catDescription(form.category) && (
+                <p id="sf-category-hint" className="form-hint">{catDescription(form.category)}</p>
+              )}
               <div className="form-row">
                 <div>
                   <label htmlFor="sf-county">County</label>
