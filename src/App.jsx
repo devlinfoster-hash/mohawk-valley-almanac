@@ -484,6 +484,28 @@ function useListings() {
   return { listings, loading, error }
 }
 
+// Exact number of published listings, or null while loading / on error.
+function usePublishedCount() {
+  const [count, setCount] = useState(null)
+  useEffect(() => {
+    let cancelled = false
+    supabase
+      .from('listings')
+      .select('id', { count: 'exact', head: true })
+      .eq('status', 'published')
+      .then(({ count, error }) => {
+        if (!cancelled && !error && typeof count === 'number') setCount(count)
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [])
+  return count
+}
+
+const HERO_TAGLINE_CLOSE = 'Free to browse, and listings are checked against public sources.'
+const HERO_TAGLINE_NO_COUNTS = `Farms, markets, makers, and homestead resources across the Mohawk Valley. ${HERO_TAGLINE_CLOSE}`
+
 function Loading({ label }) {
   return (
     <div className="loading">
@@ -835,14 +857,18 @@ function Home() {
     })
   }, [listings, query, category, county, town])
 
-  // Hero line built from the live published listings; falls back to the site
-  // tagline while loading or if the query fails.
+  // Hero line with live counts: N = exact count of published listings (a
+  // head-only count query, so it isn't capped by the listings fetch limit),
+  // C = distinct counties among the loaded published listings. Until both are
+  // known (or if either query fails) the same line renders without numbers,
+  // mirroring HVA's count-free fallback, so it never shows "0".
+  const publishedCount = usePublishedCount()
   const heroTagline = useMemo(() => {
-    if (loading || error || listings.length === 0) return SITE.tagline
     const countyCount = new Set(listings.map((l) => l.county).filter(Boolean)).size
+    if (publishedCount == null || loading || error || countyCount === 0) return HERO_TAGLINE_NO_COUNTS
     const counties = `${countyCount} ${countyCount === 1 ? 'county' : 'counties'}`
-    return `${listings.length.toLocaleString('en-US')} farms, markets, makers, and homestead resources across ${counties} of the Mohawk Valley. Free to browse, and every listing is reviewed by hand.`
-  }, [listings, loading, error])
+    return `${publishedCount.toLocaleString('en-US')} farms, markets, makers, and homestead resources across ${counties} of the Mohawk Valley. ${HERO_TAGLINE_CLOSE}`
+  }, [publishedCount, listings, loading, error])
 
   const counts = useMemo(() => {
     const acc = { _total: listings.length }
