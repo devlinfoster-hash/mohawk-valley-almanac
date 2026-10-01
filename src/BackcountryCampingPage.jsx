@@ -13,8 +13,8 @@ import { supabase } from './supabase'
 import data from './data/corridor-resupply.json'
 import { RESUPPLY_CHIPS, KIND_TO_CHIP, CHECK_BADGES } from './data/corridor-resupply-kinds.js'
 
-// TODO confirm this URL
-const CONTACT_URL = 'https://meanderny.com/contact'
+const CONTACT_EMAIL = 'hello@mohawkvalleyalmanac.com'
+const CONTACT_URL = `mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent('Backcountry camping page: correction')}`
 
 export const BACKCOUNTRY_TITLE = 'Resupply & Services: Free & Legal Backcountry Camping North of the Catskills'
 const META_DESCRIPTION =
@@ -146,7 +146,7 @@ const STYLES = `
     .landing-masthead .landing-title, .landing-masthead .rs-asof, .landing-masthead .landing-sub, .landing-masthead .listing-page-eyebrow { color: #000; }
     .rs-card { border-color: #999; }
     .rs-call { display: none; }
-    .rs-footer-block a::after { content: " (" attr(href) ")"; font-weight: 400; }
+    .rs-footer-block a::after { content: " (" attr(data-email) ")"; font-weight: 400; }
   }
 `
 
@@ -295,7 +295,7 @@ export default function BackcountryCampingContent() {
       })}
 
       <aside className="rs-footer-block">
-        Found a change? <a href={CONTACT_URL} target="_blank" rel="noopener noreferrer">Tell me through the contact page</a>.
+        <a href={CONTACT_URL} data-email={CONTACT_EMAIL}>Found a change? Tell me.</a>
       </aside>
     </article>
   )
