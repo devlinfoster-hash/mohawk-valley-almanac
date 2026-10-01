@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useMemo, useRef, useState } from 'react'
 import { Routes, Route, Link, NavLink, useParams, useSearchParams } from 'react-router-dom'
 import FreezerFullContent from './FreezerFullPage.jsx'
+import BackcountryCampingContent, { BACKCOUNTRY_TITLE } from './BackcountryCampingPage.jsx'
 import { supabase } from './supabase'
 
 // ── Palette ──────────────────────────────────────────────────────────────────
@@ -1502,6 +1503,18 @@ function FreezerFullPage() {
   )
 }
 
+// Companion page for the MeanderNY book "Free & Legal Backcountry Camping North
+// of the Catskills". Data lives in src/data/corridor-resupply.json.
+function BackcountryCampingPage() {
+  useDocumentTitle(BACKCOUNTRY_TITLE)
+  return (
+    <>
+      <BackNav wide />
+      <BackcountryCampingContent />
+    </>
+  )
+}
+
 function NotFoundPage() {
   useDocumentTitle('Page not found')
   return (
@@ -1540,6 +1553,7 @@ export default function App() {
               <Route path="/listing/:slug" element={<ListingPage />} />
               <Route path="/listings/:slug" element={<ListingPage />} />
               <Route path="/freezer-full" element={<FreezerFullPage />} />
+              <Route path="/backcountry-camping" element={<BackcountryCampingPage />} />
               <Route path="*" element={<NotFoundPage />} />
             </Routes>
           </div>
