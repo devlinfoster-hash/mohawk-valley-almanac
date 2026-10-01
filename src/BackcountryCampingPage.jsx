@@ -14,6 +14,8 @@ import data from './data/corridor-resupply.json'
 import { RESUPPLY_CHIPS, KIND_TO_CHIP, CHECK_BADGES } from './data/corridor-resupply-kinds.js'
 
 const CONTACT_EMAIL = 'hello@mohawkvalleyalmanac.com'
+const MEANDERNY_URL = 'https://www.meanderny.com/'
+const GUIDE_URL = 'https://devlinfoster.gumroad.com/l/longpath-camping?utm_source=mva&utm_medium=companion'
 const CONTACT_URL = `mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent('Backcountry camping page: correction')}`
 
 export const BACKCOUNTRY_TITLE = 'Resupply & Services: Free & Legal Backcountry Camping North of the Catskills'
@@ -107,6 +109,9 @@ function useMetaDescription(content) {
 const STYLES = `
   .rs-asof { font-family: var(--font-display); font-size: 20px; font-weight: 700; color: var(--mva-on-primary); margin-top: 14px; }
   .rs-intro { font-size: 17px; line-height: 1.65; margin-bottom: 14px; max-width: var(--reading-width); }
+  .rs-book-link { color: var(--mva-cream); text-decoration: underline; }
+  .rs-book-link:hover { color: var(--mva-on-primary); }
+  .rs-cta { margin-bottom: 20px; }
   .rs-warning { max-width: var(--reading-width); background: var(--mva-surface); border-left: 4px solid var(--mva-accent); padding: 12px 16px; font-weight: 600; margin-bottom: 20px; }
   .rs-legend-toggle { margin-bottom: 12px; }
   .rs-legend { max-width: var(--reading-width); background: var(--mva-surface); border: 1.5px solid var(--mva-line); padding: 16px 20px; margin-bottom: 20px; }
@@ -143,7 +148,7 @@ const STYLES = `
     .rs-hidden, .rs-legend { display: block !important; }
     body { background: #fff; }
     .landing-masthead { background: none; border: none; padding: 0; }
-    .landing-masthead .landing-title, .landing-masthead .rs-asof, .landing-masthead .landing-sub, .landing-masthead .listing-page-eyebrow { color: #000; }
+    .landing-masthead .landing-title, .landing-masthead .rs-asof, .landing-masthead .landing-sub, .landing-masthead .listing-page-eyebrow, .rs-book-link { color: #000; }
     .rs-card { border-color: #999; }
     .rs-call { display: none; }
     .rs-footer-block a::after { content: " (" attr(data-email) ")"; font-weight: 400; }
@@ -229,7 +234,11 @@ export default function BackcountryCampingContent() {
       <header className="landing-masthead">
         <div className="listing-page-eyebrow">Mohawk Valley Almanac · Book companion</div>
         <h1 className="landing-title">{BACKCOUNTRY_TITLE}</h1>
-        <p className="landing-sub">The online companion to the MeanderNY book of the same name.</p>
+        <p className="landing-sub">
+          The online companion to the{' '}
+          <a className="rs-book-link" href={MEANDERNY_URL} target="_blank" rel="noopener noreferrer">MeanderNY book</a> of
+          the same name.
+        </p>
         <p className="rs-asof">Checked through {formatDate(data.as_of)}</p>
       </header>
 
@@ -237,6 +246,11 @@ export default function BackcountryCampingContent() {
         This page lists the food, post offices, farm stands, and campgrounds along the northern Long Path from Gilboa
         to Altamont, in trail order. Miles are measured along the trail from the Schoharie Creek bridge in Gilboa;
         walking distances are by road from the nearest point of the trail.
+      </p>
+      <p className="rs-cta">
+        <a className="btn-primary" href={GUIDE_URL} target="_blank" rel="noopener noreferrer">
+          Get the Long Path North guide <span aria-hidden="true">→</span>
+        </a>
       </p>
       <p className="rs-warning">Hours change. Call before you count on any stop.</p>
 

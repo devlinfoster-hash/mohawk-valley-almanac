@@ -434,6 +434,7 @@ function Footer() {
           <Link to="/about">About</Link>
           <button type="button" className="link-button" onClick={openSubmitForm}>Submit a Listing</button>
           <a href={`mailto:${SITE.email}`}>{SITE.email}</a>
+          <a href="https://www.meanderny.com/" target="_blank" rel="noopener noreferrer">Field guides: MeanderNY</a>
           <Link to="/admin">Admin</Link>
         </div>
         <p className="footer-counties">{SITE.footer}</p>
